@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Horas de Prácticas</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.container{
+    width:100%;
+    max-width:1000px;
+    background:white;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 15px 35px rgba(0,0,0,.3);
+}
+
+h1{
+    text-align:center;
+    color:#0f172a;
+    margin-bottom:10px;
+}
+
+.subtitulo{
+    text-align:center;
+    color:#64748b;
+    margin-bottom:25px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#0f172a;
+    color:white;
+    padding:12px;
+}
+
+td{
+    padding:10px;
+    text-align:center;
+    border-bottom:1px solid #e2e8f0;
+}
+
+input[type="time"]{
+    padding:8px;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+}
+
+.resultado{
+    font-weight:bold;
+    color:#16a34a;
+}
+
+.botones{
+    display:flex;
+    gap:10px;
+    margin-top:20px;
+    flex-wrap:wrap;
+}
+
+button{
+    border:none;
+    padding:12px 18px;
+    border-radius:10px;
+    cursor:pointer;
+    color:white;
+    font-weight:bold;
+}
+
+.agregar{
+    background:#2563eb;
+}
+
+.calcular{
+    background:#16a34a;
+}
+
+.eliminar{
+    background:#dc2626;
+}
+
+.resumen{
+    margin-top:25px;
+    background:#f8fafc;
+    border-radius:15px;
+    padding:20px;
+    text-align:center;
+}
+
+.total{
+    font-size:2rem;
+    font-weight:bold;
+    color:#2563eb;
+}
+
+@media(max-width:700px){
+    table{
+        font-size:14px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>📋 Control de Horas de Prácticas</h1>
+    <p class="subtitulo">
+        Registra tus horarios y calcula automáticamente las horas acumuladas.
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Entrada</th>
+                <th>Salida</th>
+                <th>Tiempo Trabajado</th>
+            </tr>
+        </thead>
+
+        <tbody id="tablaHoras">
+            <tr>
+                <td><input type="time"></td>
+                <td><input type="time"></td>
+                <td class="resultado">--</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="botones">
+        <button class="agregar" onclick="agregarFila()">
+            ➕ Agregar Día
+        </button>
+
+        <button class="calcular" onclick="calcularHoras()">
+            🧮 Calcular Horas
+        </button>
+
+        <button class="eliminar" onclick="eliminarFila()">
+            🗑 Eliminar Última
+        </button>
+    </div>
+
+    <div class="resumen">
+        <h3>Total Acumulado</h3>
+        <div class="total" id="totalHoras">
+            0 h 0 min
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+function agregarFila(){
+    const fila = `
+    <tr>
+        <td><input type="time"></td>
+        <td><input type="time"></td>
+        <td class="resultado">--</td>
+    </tr>`;
+    
+    document.getElementById("tablaHoras")
+    .insertAdjacentHTML("beforeend",fila);
+}
+
+function eliminarFila(){
+    const tabla = document.getElementById("tablaHoras");
+
+    if(tabla.rows.length > 1){
+        tabla.deleteRow(tabla.rows.length-1);
+    }
+}
+
+function calcularHoras(){
+
+    const filas = document.querySelectorAll("#tablaHoras tr");
+
+    let totalMinutos = 0;
+
+    filas.forEach(fila=>{
+
+        const entrada = fila.cells[0]
+        .querySelector("input").value;
+
+        const salida = fila.cells[1]
+        .querySelector("input").value;
+
+        if(!entrada || !salida){
+            fila.cells[2].textContent="Faltan datos";
+            return;
+        }
+
+        let [hE,mE] = entrada.split(":").map(Number);
+        let [hS,mS] = salida.split(":").map(Number);
+
+        let inicio = hE*60+mE;
+        let fin = hS*60+mS;
+
+        let diferencia = fin-inicio;
+
+        if(diferencia<0){
+            diferencia += 1440;
+        }
+
+        totalMinutos += diferencia;
+
+        let horas = Math.floor(diferencia/60);
+        let minutos = diferencia%60;
+
+        fila.cells[2].textContent =
+        `${horas} h ${minutos} min`;
+    });
+
+    const totalHoras = Math.floor(totalMinutos/60);
+    const minutosRestantes = totalMinutos%60;
+
+    document.getElementById("totalHoras")
+    .textContent =
+    `${totalHoras} h ${minutosRestantes} min`;
+}
+
+</script>
+
+</body>
+</html>
